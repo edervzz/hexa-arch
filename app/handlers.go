@@ -3,8 +3,8 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
+	"endpoints/service"
 	"fmt"
-	"helloworld/service"
 	"net/http"
 	"strconv"
 

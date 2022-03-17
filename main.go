@@ -1,6 +1,6 @@
 package main
 
-import "helloworld/app"
+import "endpoints/app"
 
 func main() {
 	app.Run()

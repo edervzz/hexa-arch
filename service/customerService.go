@@ -1,6 +1,6 @@
 package service
 
-import "helloworld/domain"
+import "endpoints/domain"
 
 type CustomerService interface {
 	GetAllCustomers() ([]domain.Customer, error)

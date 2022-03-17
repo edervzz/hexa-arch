@@ -2,9 +2,9 @@ package app
 
 import (
 	"database/sql"
+	"endpoints/domain"
+	"endpoints/service"
 	"fmt"
-	"helloworld/domain"
-	"helloworld/service"
 	"log"
 	"net/http"
 	"os"
@@ -21,7 +21,7 @@ func Run() {
 	}
 
 	router.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
-	router.HandleFunc("/customer/{id}", ch.getCustomer).Methods(http.MethodGet)
+	router.HandleFunc("/customers/{id}", ch.getCustomer).Methods(http.MethodGet)
 
 	router.HandleFunc("/customers1/v2", getAllCustomers1).Methods(http.MethodGet)
 	router.HandleFunc("/customers1", greet).Methods(http.MethodGet)

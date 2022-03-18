@@ -9,5 +9,5 @@ type Customer struct {
 
 type CustomerRepository interface {
 	FindAll() ([]Customer, error)
-	Find(id int) (Customer, error)
+	Find(id int) (*Customer, error)
 }

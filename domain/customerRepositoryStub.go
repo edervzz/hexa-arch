@@ -8,14 +8,15 @@ func (s CustomerReposityStub) FindAll() ([]Customer, error) {
 	return s.customers, nil
 }
 
-func (s CustomerReposityStub) Find(id int) (Customer, error) {
+func (s CustomerReposityStub) Find(id int) (*Customer, error) {
 
 	for i, v := range s.customers {
 		if v.ID == id {
-			return s.customers[i], nil
+			c := &s.customers[i]
+			return c, nil
 		}
 	}
-	return Customer{}, nil
+	return nil, nil
 }
 
 func NewCustomerRepositoryStub() CustomerReposityStub {

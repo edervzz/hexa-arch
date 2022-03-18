@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
+	errs "endpoints/err"
 	"endpoints/service"
 	"fmt"
 	"net/http"
@@ -30,9 +31,18 @@ func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Reques
 func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
-	customer, _ := ch.service.GetCustomer(id)
+	customer, err := ch.service.GetCustomer(id)
+
+	if err != nil {
+		notFound := errs.NewErrorNotFound()
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(notFound.Code)
+		json.NewEncoder(w).Encode(notFound.AsMessage())
+		return
+	}
 
 	if r.Header.Get("Content-Type") == "application/xml" {
+
 		w.Header().Add("Content-Type", "application/xml")
 		xml.NewEncoder(w).Encode(customer)
 	} else {

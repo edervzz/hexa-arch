@@ -2,27 +2,24 @@ package domain
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type CustomerRepositoryDB struct{}
+type CustomerRepositoryDB struct {
+	client *sql.DB
+}
 
 func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 	var c Customer
 	var customers []Customer
-	client, err := sql.Open("mysql", "root:eder@/Udemy")
-	if err != nil {
-		panic(err)
-	}
-	// See "Important settings" section.
-	client.SetConnMaxLifetime(time.Minute * 3)
-	client.SetMaxOpenConns(10)
-	client.SetMaxIdleConns(10)
 
 	findAllSql := "select id, name, city, zipcode from customer"
-	rows, err := client.Query(findAllSql)
+	rows, _ := d.client.Query(findAllSql)
 
 	for rows.Next() {
 		rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
@@ -31,9 +28,21 @@ func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 	return customers, nil
 }
 
-func (d CustomerRepositoryDB) Find(id int) (Customer, error) {
-	var c Customer
+func (d CustomerRepositoryDB) Find(id int) (*Customer, error) {
+	var c *Customer = &Customer{}
 
+	fmt.Print(d)
+	findAllSql := "select id, name, city, zipcode from customer where id = ?"
+	rows := d.client.QueryRow(findAllSql, id)
+	err := rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
+	if err == sql.ErrNoRows {
+		fmt.Println(err.Error())
+		return nil, errors.New("Customer not found")
+	}
+	return c, nil
+}
+
+func NewCustomerRepositoryDB() CustomerRepositoryDB {
 	client, err := sql.Open("mysql", "root:eder@/Udemy")
 	if err != nil {
 		panic(err)
@@ -43,13 +52,13 @@ func (d CustomerRepositoryDB) Find(id int) (Customer, error) {
 	client.SetMaxOpenConns(10)
 	client.SetMaxIdleConns(10)
 
-	findAllSql := "select id, name, city, zipcode from customer where id = ?"
-	rows, err := client.Query(findAllSql, id)
-	rows.Next()
-	rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
-	return c, nil
-}
+	err = client.Ping()
+	if err != nil {
+		fmt.Println("error:", err.Error())
+		os.Exit(1)
+	}
 
-func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	return CustomerRepositoryDB{}
+	return CustomerRepositoryDB{
+		client: client,
+	}
 }

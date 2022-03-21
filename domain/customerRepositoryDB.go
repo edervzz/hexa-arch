@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
 type CustomerRepositoryDB struct {
@@ -15,16 +16,22 @@ type CustomerRepositoryDB struct {
 }
 
 func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
-	var c Customer
+	// var c Customer
 	var customers []Customer
 
 	findAllSql := "select id, name, city, zipcode from customer"
 	rows, _ := d.client.Query(findAllSql)
 
-	for rows.Next() {
-		rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
-		customers = append(customers, c)
+	err := sqlx.StructScan(rows, &customers)
+	if err != nil {
+		fmt.Println(err.Error())
+		return []Customer{}, err
+
 	}
+	// for rows.Next() {
+	// 	rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
+	// 	customers = append(customers, c)
+	// }
 	return customers, nil
 }
 
@@ -34,7 +41,7 @@ func (d CustomerRepositoryDB) Find(id int) (*Customer, error) {
 	fmt.Print(d)
 	findAllSql := "select id, name, city, zipcode from customer where id = ?"
 	rows := d.client.QueryRow(findAllSql, id)
-	err := rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
+	err := rows.Scan(&c.ID_customer, &c.Name, &c.City, &c.Zipcode)
 	if err == sql.ErrNoRows {
 		fmt.Println(err.Error())
 		return nil, errors.New("Customer not found")

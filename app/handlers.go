@@ -17,7 +17,15 @@ type CustomerHandler struct {
 }
 
 func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Request) {
-	customers, _ := ch.service.GetAllCustomers()
+	customers, err := ch.service.GetAllCustomers()
+
+	if err != nil {
+		notFound := errs.NewErrorNotFound()
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(notFound.Code)
+		json.NewEncoder(w).Encode(notFound.AsMessage())
+		return
+	}
 
 	if r.Header.Get("Content-Type") == "application/xml" {
 		w.Header().Add("Content-Type", "application/xml")

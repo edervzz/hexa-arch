@@ -2,8 +2,8 @@ package app
 
 import (
 	"endpoints/domain"
+	"endpoints/logger"
 	"endpoints/service"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -27,6 +27,6 @@ func Run() {
 
 	port := "8000"
 	server := "localhost:" + port
-	fmt.Println("listening on", port)
+	logger.Info("listening on " + server)
 	log.Fatal(http.ListenAndServe(server, router))
 }

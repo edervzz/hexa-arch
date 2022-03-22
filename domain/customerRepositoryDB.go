@@ -12,22 +12,25 @@ import (
 )
 
 type CustomerRepositoryDB struct {
-	client *sql.DB
+	client *sqlx.DB
 }
 
 func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 	// var c Customer
-	var customers []Customer
+	var customers []Customer = []Customer{}
 
 	findAllSql := "select id, name, city, zipcode from customer"
-	rows, _ := d.client.Query(findAllSql)
-
-	err := sqlx.StructScan(rows, &customers)
+	err := d.client.Select(&customers, findAllSql)
 	if err != nil {
 		fmt.Println(err.Error())
 		return []Customer{}, err
-
 	}
+	// rows, _ := d.client.Query(findAllSql)
+	// err := sqlx.StructScan(rows, &customers)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	return []Customer{}, err
+	// }
 	// for rows.Next() {
 	// 	rows.Scan(&c.ID, &c.Name, &c.City, &c.Zipcode)
 	// 	customers = append(customers, c)
@@ -50,7 +53,7 @@ func (d CustomerRepositoryDB) Find(id int) (*Customer, error) {
 }
 
 func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	client, err := sql.Open("mysql", "root:eder@/Udemy")
+	client, err := sqlx.Open("mysql", "root:eder@/Udemy")
 	if err != nil {
 		panic(err)
 	}

@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -52,23 +50,8 @@ func (d CustomerRepositoryDB) Find(id int) (*Customer, error) {
 	return c, nil
 }
 
-func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	client, err := sqlx.Open("mysql", "root:eder@/Udemy")
-	if err != nil {
-		panic(err)
-	}
-	// See "Important settings" section.
-	client.SetConnMaxLifetime(time.Minute * 3)
-	client.SetMaxOpenConns(10)
-	client.SetMaxIdleConns(10)
-
-	err = client.Ping()
-	if err != nil {
-		fmt.Println("error:", err.Error())
-		os.Exit(1)
-	}
-
+func NewCustomerRepositoryDB(db *sqlx.DB) CustomerRepositoryDB {
 	return CustomerRepositoryDB{
-		client: client,
+		client: db,
 	}
 }

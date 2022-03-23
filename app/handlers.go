@@ -3,9 +3,9 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
-	errs "endpoints/err"
+	"endpoints/errs"
+	"endpoints/logger"
 	"endpoints/service"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,7 +13,7 @@ import (
 )
 
 type CustomerHandler struct {
-	service service.CustomerService
+	service service.ICustomerService
 }
 
 func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +50,6 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Header.Get("Content-Type") == "application/xml" {
-
 		w.Header().Add("Content-Type", "application/xml")
 		xml.NewEncoder(w).Encode(customer)
 	} else {
@@ -59,55 +58,30 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type Customer struct {
-	Name    string `json:"fullname" xml:"name"`
-	City    string `json:"city" xml:"city"`
-	Zipcode string `json:"zipcode" xml:"zipcode"`
+type AccountHandler struct {
+	service service.AccountService
 }
 
-func greet(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode("hola mundo")
-}
+func (ah *AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) {
+	var createAccountRequest service.AccountCreateRequest
 
-func getAllCustomers1(w http.ResponseWriter, r *http.Request) {
-	customers := []Customer{
-		{Name: "Eder", City: "EDOMEX", Zipcode: "52928"},
-		{Name: "Sheila", City: "EDOMEX", Zipcode: "55027"},
-		{Name: "Osmar", City: "EDOMEX", Zipcode: "11450"},
+	w.Header().Add("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&createAccountRequest)
+
+	if err != nil {
+		logger.Info(err.Error())
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode("Error during decoding...")
+		return
 	}
 
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customers)
-	} else {
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customers)
+	result, errApp := ah.service.CreateAccount(createAccountRequest)
+	if errApp != nil {
+		w.WriteHeader(errApp.Code)
+		json.NewEncoder(w).Encode(errApp.Message)
+		return
 	}
-}
-
-func getCustomer1(w http.ResponseWriter, r *http.Request) {
-	customers := []Customer{
-		{Name: "Eder", City: "EDOMEX", Zipcode: "52928"},
-		{Name: "Sheila", City: "EDOMEX", Zipcode: "55027"},
-		{Name: "Osmar", City: "EDOMEX", Zipcode: "11450"},
-	}
-	vars := mux.Vars(r)
-
-	var customer Customer = Customer{}
-
-	for i := range customers {
-		if customers[i].Name == vars["customer_id"] {
-			customer = customers[i]
-		}
-	}
-
-	fmt.Println(r.Header.Get("Content-Type"))
-
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customer)
-	} else {
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customer)
-	}
+	w.WriteHeader(201)
+	json.NewEncoder(w).Encode(result)
 }

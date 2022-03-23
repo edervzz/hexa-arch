@@ -19,3 +19,10 @@ func NewErrorNotFound() *AppError {
 		Message: "Item not found",
 	}
 }
+
+func NewUnexpectedError() *AppError {
+	return &AppError{
+		Code:    http.StatusNotFound,
+		Message: "Item not found",
+	}
+}

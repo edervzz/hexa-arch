@@ -13,7 +13,7 @@ import (
 )
 
 type CustomerHandler struct {
-	service service.ICustomerService
+	service service.CustomerService
 }
 
 func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +58,7 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// -----------------------------------
 type AccountHandler struct {
 	service service.AccountService
 }
@@ -71,7 +72,7 @@ func (ah *AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		logger.Info(err.Error())
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Error during decoding...")
 		return
 	}
@@ -84,4 +85,32 @@ func (ah *AccountHandler) createAccount(w http.ResponseWriter, r *http.Request) 
 	}
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(result)
+}
+
+// -----------------------------------
+type PaymItemHandler struct {
+	service service.PaymItemService
+}
+
+func (ph PaymItemHandler) PostPaymItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	var itemReq service.PaymItemPostRequest
+
+	err := json.NewDecoder(r.Body).Decode(&itemReq)
+	if err != nil {
+		logger.Info(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Cannot create payment item...")
+		return
+	}
+	itemResp, errs := ph.service.Post(itemReq)
+	if errs != nil {
+		logger.Info(errs.Message)
+		w.WriteHeader(errs.Code)
+		json.NewEncoder(w).Encode("Cannot create payment item...")
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(itemResp)
 }

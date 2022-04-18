@@ -26,3 +26,17 @@ func NewUnexpectedError() *AppError {
 		Message: "Item not found",
 	}
 }
+
+func NewErrorMinimalBalance() *AppError {
+	return &AppError{
+		Code:    http.StatusBadRequest,
+		Message: "At least 5000.00 for opening account.",
+	}
+}
+
+func NewBadRequest(text string) *AppError {
+	return &AppError{
+		Code:    http.StatusBadRequest,
+		Message: text,
+	}
+}

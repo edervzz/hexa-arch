@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,6 +16,25 @@ import (
 )
 
 func Run() {
+
+	a := adder()
+	fmt.Println(a(1))
+	fmt.Println(a(2))
+
+	b := func(a int) int {
+		var x int
+		x = x + a
+		return x
+	}
+
+	fmt.Println(b(1))
+	fmt.Println(b(2))
+
+	df := dynamicFunc(3)
+
+	fmt.Println(df())
+	fmt.Println(df())
+	fmt.Println(df())
 
 	sanityCheck()
 
@@ -32,31 +52,37 @@ func Run() {
 		service: service.NewAccountService(domain.NewAccountRepositoryDB(dbClient)),
 	}
 
+	ph := PaymItemHandler{
+		service: service.NewPaymItemPostService(domain.NewPaymItemRepositoryDB(dbClient)),
+	}
+
 	router.HandleFunc("/customers", ch.getAllCustomers).Methods(http.MethodGet)
 	router.HandleFunc("/customers/{id}", ch.getCustomer).Methods(http.MethodGet)
 
 	router.HandleFunc("/accounts", ah.createAccount).Methods(http.MethodPost)
 
-	server := os.Getenv("SERVER_ADDRESS")
-	port := os.Getenv("SERVER_PORT")
+	router.HandleFunc("/paymitems", ph.PostPaymItem).Methods(http.MethodPost)
+
+	server := os.Getenv("SERVER")
+	port := os.Getenv("PORT")
 	server = server + ":" + port
 	logger.Info("listening on " + server)
 	log.Fatal(http.ListenAndServe(server, router))
 }
 
 func sanityCheck() {
-	if os.Getenv("SERVER_ADDRESS") == "" ||
-		os.Getenv("SERVER_PORT") == "" ||
-		os.Getenv("DB_USER") == "" ||
+	if os.Getenv("SERVER") == "" ||
+		os.Getenv("PORT") == "" ||
+		os.Getenv("DB_PASS") == "" ||
 		os.Getenv("DB_NAME") == "" {
 		log.Fatal("Envars not defined...")
 	}
 }
 
 func DBConnection() *sqlx.DB {
-	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASS")
 	name := os.Getenv("DB_NAME")
-	client, err := sqlx.Open("mysql", "root:"+user+"@/"+name+"")
+	client, err := sqlx.Open("mysql", "root:"+pass+"@/"+name+"")
 	if err != nil {
 		panic(err)
 	}
@@ -71,4 +97,30 @@ func DBConnection() *sqlx.DB {
 		os.Exit(1)
 	}
 	return client
+}
+
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int {
+		sum = sum + x
+		return sum
+	}
+}
+
+func dynamicFunc(id int) func() string {
+	counter := 0
+	x := ""
+	switch id {
+	case 1:
+		return func() string {
+			counter++
+			x = "uno"
+			return x + "-" + strconv.Itoa(counter)
+		}
+	}
+	return func() string {
+		x = "otro"
+		counter++
+		return x + "-" + strconv.Itoa(counter)
+	}
 }

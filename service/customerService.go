@@ -5,15 +5,15 @@ import (
 	"endpoints/dto"
 )
 
-type DefaultCustomerServer struct {
-	customer domain.ICustomerRepository
+type DefaultCustomerService struct {
+	customer domain.CustomerRepository
 }
-type ICustomerService interface {
+type CustomerService interface {
 	GetAllCustomers() ([]dto.CustomerResponse, error)
 	GetCustomer(id int) (*dto.CustomerResponse, error)
 }
 
-func (s DefaultCustomerServer) toDtoCustomer(c []domain.Customer) []dto.CustomerResponse {
+func (s DefaultCustomerService) toDtoCustomer(c []domain.Customer) []dto.CustomerResponse {
 	var cr dto.CustomerResponse
 	var r []dto.CustomerResponse
 	for _, v := range c {
@@ -26,7 +26,7 @@ func (s DefaultCustomerServer) toDtoCustomer(c []domain.Customer) []dto.Customer
 	return r
 }
 
-func (s DefaultCustomerServer) GetAllCustomers() ([]dto.CustomerResponse, error) {
+func (s DefaultCustomerService) GetAllCustomers() ([]dto.CustomerResponse, error) {
 	all, err := s.customer.FindAll()
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (s DefaultCustomerServer) GetAllCustomers() ([]dto.CustomerResponse, error)
 	return s.toDtoCustomer(all), err
 }
 
-func (s DefaultCustomerServer) GetCustomer(id int) (*dto.CustomerResponse, error) {
+func (s DefaultCustomerService) GetCustomer(id int) (*dto.CustomerResponse, error) {
 	customer, err := s.customer.Find(id)
 	if err != nil {
 		return nil, err
@@ -48,8 +48,8 @@ func (s DefaultCustomerServer) GetCustomer(id int) (*dto.CustomerResponse, error
 	return r, nil
 }
 
-func NewCustomerService(customer domain.ICustomerRepository, account domain.IAccountRepository) DefaultCustomerServer {
-	return DefaultCustomerServer{
+func NewCustomerService(customer domain.CustomerRepository, account domain.IAccountRepository) DefaultCustomerService {
+	return DefaultCustomerService{
 		customer: customer,
 	}
 }

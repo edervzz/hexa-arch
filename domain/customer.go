@@ -7,7 +7,7 @@ type Customer struct {
 	Zipcode     string `json:"zipcode" xml:"zipcode"`
 }
 
-type ICustomerRepository interface {
+type CustomerRepository interface {
 	FindAll() ([]Customer, error)
 	Find(id int) (*Customer, error)
 }

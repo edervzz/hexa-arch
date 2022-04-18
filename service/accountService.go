@@ -27,6 +27,9 @@ type IAccountService interface {
 }
 
 func (a AccountService) CreateAccount(req AccountCreateRequest) (*AccountCreateResponse, *errs.AppError) {
+	if req.Amount < 5000 {
+		return nil, errs.NewErrorMinimalBalance()
+	}
 	t := time.Now().Local()
 	s := t.Format("2006-01-02")
 	newAccount := domain.Account{

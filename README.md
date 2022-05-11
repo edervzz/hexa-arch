@@ -1,2 +1,2 @@
-# endpoints
-Golang endpoint
+# Sample about hexagonal architecture
+
